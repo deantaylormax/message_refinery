@@ -58,21 +58,32 @@ def load_LLM(openai_api_key):
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 
-# Initialize session state
+# Initialize session state for logged_in and attempted_login
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
+if 'attempted_login' not in st.session_state:
+    st.session_state.attempted_login = False
 
-# Basic login section
+# Sidebar for login/logout
 st.sidebar.title("Login")
-username = st.sidebar.text_input("Username")
-password = st.sidebar.text_input("Password", type="password")
-
-# Authentication check
-if st.sidebar.button("Login"):
-    if username == USERNAME and password == PASSWORD:
-        st.session_state.logged_in = True
-        st.success(f"Logged in as {username}")
-        
+if not st.session_state.logged_in:
+    # User is not logged in, show login fields
+    username = st.sidebar.text_input("Username")
+    password = st.sidebar.text_input("Password", type="password")
+    if st.sidebar.button("Login"):
+        st.session_state.attempted_login = True
+        if username == USERNAME and password == PASSWORD:
+            st.session_state.logged_in = True
+            st.success("Logged in successfully!")
+        else:
+            if st.session_state.attempted_login:
+                st.error("Incorrect username or password")
+else:
+    # User is logged in, show logout button
+    if st.sidebar.button("Logout"):
+        st.session_state.logged_in = False
+        st.session_state.attempted_login = False
+        st.rerun()  # Rerun the app to update the sidebar# Rerun the app to update the sidebar
 
 # Display the main app if logged in
 if st.session_state.logged_in:
@@ -118,5 +129,6 @@ if st.session_state.logged_in:
         formatted_email = llm(prompt_with_email)
 
         st.write(formatted_email)
-else:
+elif st.session_state.attempted_login:
+    # Show error only if login was attempted
     st.error("Incorrect username or password")
