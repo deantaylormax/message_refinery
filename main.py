@@ -1,5 +1,5 @@
 import streamlit as st
-from langchain import PromptTemplate
+from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAI
 import os
 import dotenv
@@ -58,6 +58,10 @@ def load_LLM(openai_api_key):
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 
+# Initialize session state
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
 # Basic login section
 st.sidebar.title("Login")
 username = st.sidebar.text_input("Username")
@@ -66,47 +70,53 @@ password = st.sidebar.text_input("Password", type="password")
 # Authentication check
 if st.sidebar.button("Login"):
     if username == USERNAME and password == PASSWORD:
+        st.session_state.logged_in = True
         st.success(f"Logged in as {username}")
-        st.header("Message Refinery")
-        st.markdown("Refine your messages with new tones and dialects.")
-        st.markdown("## Enter Your Text - Make Your Selections")
-        col1, col2 = st.columns(2)
-        with col1:
-            option_tone = st.selectbox(
-                'Choose your tone for the message',
-                ('Excited', 'Formal', 'Casual', 'Robotic'))
-            
-        with col2:
-            option_dialect = st.selectbox(
-                'Choose your dailect for the message',
-                ('Midwest American English', 'Southern American English', 'New England American English', 'English as spoken by a native of the United Kingdom', 'English as spoken by a native of Australia'))
+        
 
-        def get_text():
-            input_text = st.text_area(label="Email Input", label_visibility='collapsed', placeholder="Your Email...", key="email_input")
-            return input_text
+# Display the main app if logged in
+if st.session_state.logged_in:
+    # Your Streamlit app code goes here
+    st.header("Message Refinery")
+    st.markdown("Refine your messages with new tones and dialects.")
+    st.markdown("## Enter Your Text - Make Your Selections")
+    col1, col2 = st.columns(2)
+    with col1:
+        option_tone = st.selectbox(
+            'Choose your tone for the message',
+            ('Excited', 'Formal', 'Casual', 'Robotic'))
+        
+    with col2:
+        option_dialect = st.selectbox(
+            'Choose your dailect for the message',
+            ('Midwest American English', 'Southern American English', 'New England American English', 'English as spoken by a native of the United Kingdom', 'English as spoken by a native of Australia'))
 
-        email_input = get_text()
+    def get_text():
+        input_text = st.text_area(label="Email Input", label_visibility='collapsed', placeholder="Your Email...", key="email_input")
+        return input_text
 
-        if len(email_input.split(" ")) > 500:
-            st.write("Try again, the max length for your message is 500 words.")
-            st.stop()
+    email_input = get_text()
 
-        def update_text_with_example():
-            # print ("in updated")
-            st.session_state.email_input = "I has to get to your house by when again?  I wanna not be to late you know.  Thanks for so much responding."
+    if len(email_input.split(" ")) > 500:
+        st.write("Try again, the max length for your message is 500 words.")
+        st.stop()
 
-        st.button("*Click to see an example*", type='secondary', help="Check out the example.", on_click=update_text_with_example)
+    def update_text_with_example():
+        # print ("in updated")
+        st.session_state.email_input = "I has to get to your house by when again?  I wanna not be to late you know.  Thanks for so much responding."
 
-        st.markdown("### Your New Message:")
+    st.button("*Click to see an example*", type='secondary', help="Check out the example.", on_click=update_text_with_example)
 
-        if email_input:
+    st.markdown("### Your New Message:")
 
-            llm = load_LLM(openai_api_key=openai_api_key)
+    if email_input:
 
-            prompt_with_email = prompt.format(tone=option_tone, dialect=option_dialect, email=email_input)
+        llm = load_LLM(openai_api_key=openai_api_key)
 
-            formatted_email = llm(prompt_with_email)
+        prompt_with_email = prompt.format(tone=option_tone, dialect=option_dialect, email=email_input)
 
-            st.write(formatted_email)
-    else:
-        st.error("Incorrect username or password")
+        formatted_email = llm(prompt_with_email)
+
+        st.write(formatted_email)
+else:
+    st.error("Incorrect username or password")
