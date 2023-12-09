@@ -103,7 +103,7 @@ if st.session_state.logged_in:
             ('Midwest American English', 'Southern American English', 'New England American English', 'English as spoken by a native of the United Kingdom', 'English as spoken by a native of Australia'))
 
     def get_text():
-        input_text = st.text_area(label="Email Input", label_visibility='collapsed', placeholder="Your Email...", key="email_input")
+        input_text = st.text_area(label="Message Input", label_visibility='collapsed', placeholder="Your Message...", key="email_input")
         return input_text
 
     email_input = get_text()
@@ -111,6 +111,7 @@ if st.session_state.logged_in:
     if len(email_input.split(" ")) > 500:
         st.write("Try again, the max length for your message is 500 words.")
         st.stop()
+    
 
     def update_text_with_example():
         # print ("in updated")
@@ -118,7 +119,7 @@ if st.session_state.logged_in:
 
     st.button("*Click to see an example*", type='secondary', help="Check out the example.", on_click=update_text_with_example)
 
-    st.markdown("### Your New Message:")
+    st.markdown("### Refined Message:")
 
     if email_input:
 
