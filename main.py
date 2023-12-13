@@ -58,6 +58,8 @@ def load_LLM(openai_api_key):
 # Define your username and password
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
+USER1 = os.getenv("user1")
+PASSWORD1 = os.getenv("password1")
 
 # Initialize session state for logged_in and attempted_login
 if 'logged_in' not in st.session_state:
@@ -67,10 +69,6 @@ if 'attempted_login' not in st.session_state:
 
 # Sidebar for login/logout
 st.sidebar.title("Login")
-# Retrieve the credentials string from environment variables
-credentials_str = os.getenv("CREDENTIALS")
-# Convert the string back to a dictionary
-credentials = json.loads(credentials_str)
 
 if not st.session_state.get('logged_in', False):
     # User is not logged in, show login fields
@@ -80,12 +78,9 @@ if not st.session_state.get('logged_in', False):
     if st.sidebar.button("Login"):
         st.session_state.attempted_login = True
         # Check against both sets of credentials
-        for user in credentials.values():
-            if username == user['username'] and password == user['password']:
-                st.session_state.logged_in = True
-                st.session_state.user_role = "user1" if user['username'] == "user1" else "user2"
-                st.success("Logged in successfully!")
-                break
+        if (username == USER1 and password == PASSWORD1) or (username == USERNAME and password == PASSWORD):
+            st.session_state.logged_in = True
+            st.success("Logged in successfully!")
         else:  # This else belongs to the for loop, not the if statement
             if st.session_state.attempted_login:
                 st.error("Incorrect username or password")
@@ -95,7 +90,7 @@ else:
         st.session_state.logged_in = False
         st.session_state.attempted_login = False
         st.session_state.user_role = None
-        st.experimental_rerun()  # Use experimental_rerun for the latest versions of Streamlit
+        st.rerun()  # Use experimental_rerun for the latest versions of Streamlit
 
 # Display the main app if logged in
 if st.session_state.logged_in:
