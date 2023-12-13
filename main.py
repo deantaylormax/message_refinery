@@ -2,6 +2,7 @@ import streamlit as st
 from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAI
 import os
+import json
 import dotenv
 dotenv.load_dotenv()
 openai_api_key=os.getenv("OPENAI_API_KEY")
@@ -66,16 +67,26 @@ if 'attempted_login' not in st.session_state:
 
 # Sidebar for login/logout
 st.sidebar.title("Login")
-if not st.session_state.logged_in:
+# Retrieve the credentials string from environment variables
+credentials_str = os.getenv("CREDENTIALS")
+# Convert the string back to a dictionary
+credentials = json.loads(credentials_str)
+
+if not st.session_state.get('logged_in', False):
     # User is not logged in, show login fields
     username = st.sidebar.text_input("Username")
     password = st.sidebar.text_input("Password", type="password")
+
     if st.sidebar.button("Login"):
         st.session_state.attempted_login = True
-        if username == USERNAME and password == PASSWORD:
-            st.session_state.logged_in = True
-            st.success("Logged in successfully!")
-        else:
+        # Check against both sets of credentials
+        for user in credentials.values():
+            if username == user['username'] and password == user['password']:
+                st.session_state.logged_in = True
+                st.session_state.user_role = "user1" if user['username'] == "user1" else "user2"
+                st.success("Logged in successfully!")
+                break
+        else:  # This else belongs to the for loop, not the if statement
             if st.session_state.attempted_login:
                 st.error("Incorrect username or password")
 else:
@@ -83,7 +94,8 @@ else:
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
         st.session_state.attempted_login = False
-        st.rerun()  # Rerun the app to update the sidebar# Rerun the app to update the sidebar
+        st.session_state.user_role = None
+        st.experimental_rerun()  # Use experimental_rerun for the latest versions of Streamlit
 
 # Display the main app if logged in
 if st.session_state.logged_in:
