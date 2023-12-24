@@ -67,6 +67,8 @@ if 'logged_in' not in st.session_state:
 if 'attempted_login' not in st.session_state:
     st.session_state.attempted_login = False
 
+st.title("Message Refinery")
+
 # Sidebar for login/logout
 st.sidebar.title("Login")
 
